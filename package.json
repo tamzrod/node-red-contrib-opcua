@@ -33,7 +33,8 @@
       "OpcUa-Event": "opcua/106-opcuaevent.js",
       "OpcUa-Method": "opcua/107-opcuamethod.js",
       "OpcUa-Rights": "opcua/108-opcuarights.js",
-      "OpcUa-Discovery": "opcua/109-opcuadiscovery.js"
+      "OpcUa-Discovery": "opcua/109-opcuadiscovery.js",
+      "OpcUa-ConnectionTester": "opcua/opcua-connection-tester.js"
     }
   },
   "engines": {
