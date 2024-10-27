@@ -33,28 +33,32 @@ module.exports = function(RED) {
             };
 
             try {
-                // Connect to the OPC UA server with timeout
+                // Log and attempt to connect to the OPC UA server with timeout
+                console.log("Attempting to connect to OPC UA server:", endpointUrl);
                 await connectWithTimeout(client, endpointUrl, timeout);
+                console.log("Connected to OPC UA server");
+
                 node.status({ fill: "green", shape: "dot", text: "Connected" });
 
                 // Create a session
                 let session;
                 if (securityMode === "None" && securityPolicy === "None") {
-                    // Use anonymous session if securityMode and securityPolicy are None
+                    console.log("Creating anonymous session...");
                     session = await client.createSession();
                 } else if (username && password) {
-                    // Use username/password session if provided
+                    console.log("Creating session with username and password...");
                     session = await client.createSession({ userName: username, password: password });
                 } else {
-                    // Handle error for missing credentials when security is enabled
                     throw new Error("Security is enabled but username/password is missing");
                 }
 
                 node.status({ fill: "green", shape: "ring", text: "Session created" });
+                console.log("Session created");
 
                 // Test reading a server attribute (e.g., Server Status)
                 const nodeToRead = { nodeId: "ns=0;i=2258", attributeId: 13 };
                 const dataValue = await session.read(nodeToRead);
+                console.log("Read server status:", dataValue.value.value);
 
                 // Set a successful payload
                 msg.payload = {
@@ -70,8 +74,10 @@ module.exports = function(RED) {
                 await session.close();
                 await client.disconnect();
                 node.status({ fill: "blue", shape: "dot", text: "Disconnected" });
+                console.log("Disconnected from OPC UA server");
             } catch (err) {
-                // Set error status and send error message
+                // Log error details and update Node-RED status
+                console.error("Error:", err.message);
                 node.status({ fill: "red", shape: "dot", text: "Error" });
                 msg.payload = {
                     status: "error",
