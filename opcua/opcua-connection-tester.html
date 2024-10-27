@@ -1,87 +1,21 @@
-<!--
- 
- Copyright 2024 Your Company
- 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-
--->
-
-<script type="text/javascript">
-    RED.nodes.registerType('OpcUa-ConnectionTester', {
-        category: 'opcua',
-        color: "#3FADB5",
-        defaults: {
-            endpoint: { value: "opc.tcp://localhost:4840", required: true },
-            securityPolicy: { value: "None", required: true },
-            securityMode: { value: "None", required: true },
-            username: { value: "" },
-            password: { value: "" },
-            name: { value: "" }
-        },
-        inputs: 1,
-        outputs: 1,
-        align: "right",
-        icon: "opcuanodeLogo.png",
-        label: function () {
-            return this.name || "OPC UA Connection Tester";
-        },
-        labelStyle: function () {
-            return this.name ? "node_label_italic" : "";
-        }
-    });
-</script>
-
-<script type="text/x-red" data-template-name="OpcUa-ConnectionTester">
-    <div class="form-row">
-        <label for="node-input-endpoint"><i class="icon-link"></i> Endpoint</label>
-        <input type="text" id="node-input-endpoint" placeholder="opc.tcp://localhost:4840">
-    </div>
-    <div class="form-row">
-        <label for="node-input-securityPolicy"><i class="icon-lock"></i> Security Policy</label>
-        <select id="node-input-securityPolicy">
-            <option value="None">None</option>
-            <option value="Basic128Rsa15">Basic128Rsa15</option>
-            <option value="Basic256">Basic256</option>
-            <option value="Basic256Sha256">Basic256Sha256</option>
-        </select>
-    </div>
-    <div class="form-row">
-        <label for="node-input-securityMode"><i class="icon-lock"></i> Security Mode</label>
-        <select id="node-input-securityMode">
-            <option value="None">None</option>
-            <option value="Sign">Sign</option>
-            <option value="SignAndEncrypt">SignAndEncrypt</option>
-        </select>
-    </div>
-    <div class="form-row">
-        <label for="node-input-username"><i class="icon-user"></i> Username</label>
-        <input type="text" id="node-input-username" placeholder="Optional">
-    </div>
-    <div class="form-row">
-        <label for="node-input-password"><i class="icon-key"></i> Password</label>
-        <input type="password" id="node-input-password" placeholder="Optional">
-    </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="">
-    </div>
-</script>
-
 <script type="text/x-red" data-help-name="OpcUa-ConnectionTester">
-    <p>This node tests OPC UA connections with configurable endpoint and security settings.</p>
-    <p><strong>Endpoint</strong>: Specify the OPC UA server's URL.</p>
-    <p><strong>Security Policy</strong>: Choose the security policy (e.g., None, Basic128Rsa15).</p>
-    <p><strong>Security Mode</strong>: Choose the security mode (e.g., None, Sign).</p>
-    <p><strong>Username/Password</strong>: Provide credentials if required for server access.</p>
-    <p><strong>Note</strong>: The node status will update to reflect connection success or failure.</p>
+    <p>This node tests an OPC UA connection with customizable parameters. You can provide connection settings in <strong>msg.payload</strong> to override default configuration values:</p>
+    <ul>
+        <li><strong>endpoint</strong> (String, optional): The OPC UA server URL. Example: "opc.tcp://127.0.0.1:4840"</li>
+        <li><strong>securityPolicy</strong> (String, optional): Security policy. Options: "None", "Basic128Rsa15", "Basic256", "Basic256Sha256". Default: "None"</li>
+        <li><strong>securityMode</strong> (String, optional): Message security mode. Options: "None", "Sign", "SignAndEncrypt". Default: "None"</li>
+        <li><strong>username</strong> (String, optional): Username for authenticated connections (required if security is enabled)</li>
+        <li><strong>password</strong> (String, optional): Password for authenticated connections (required if security is enabled)</li>
+    </ul>
+    <p>If <strong>securityPolicy</strong> and <strong>securityMode</strong> are both set to "None", the connection defaults to anonymous mode, and <strong>username</strong> and <strong>password</strong> are ignored.</p>
+    <p><strong>Example msg.payload:</strong></p>
+    <pre>
+{
+    "endpoint": "opc.tcp://127.0.0.1:4840",
+    "securityPolicy": "None",
+    "securityMode": "None",
+    "username": "myUsername",
+    "password": "myPassword"
+}
+    </pre>
 </script>
