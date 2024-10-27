@@ -61,4 +61,26 @@ module.exports = function(RED) {
                     status: "connected",
                     endpoint: endpointUrl,
                     securityPolicy: securityPolicy,
-                    securityMode: 
+                    securityMode: securityMode,
+                    serverStatus: dataValue.value.value // Assuming the value attribute contains the server status
+                };
+                node.send(msg);
+
+                // Close the session and disconnect the client after testing
+                await session.close();
+                await client.disconnect();
+                node.status({ fill: "blue", shape: "dot", text: "Disconnected" });
+            } catch (err) {
+                // Set error status and send error message
+                node.status({ fill: "red", shape: "dot", text: "Error" });
+                msg.payload = {
+                    status: "error",
+                    error: err.message
+                };
+                node.send(msg);
+            }
+        });
+    }
+
+    RED.nodes.registerType("opcua-connection-tester", OpcUaConnectionTester);
+};
