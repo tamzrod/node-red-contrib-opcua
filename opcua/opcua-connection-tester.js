@@ -11,6 +11,7 @@ module.exports = function(RED) {
             const securityMode = msg.payload.securityMode || config.securityMode || "None";
             const username = msg.payload.username || config.username || null;
             const password = msg.payload.password || config.password || null;
+            const timeout = msg.payload.timeout || config.timeout || 5000; // Default timeout of 5000 ms (5 seconds)
 
             // Initialize OPC UA client with the specified parameters
             const client = OPCUAClient.create({
@@ -21,9 +22,19 @@ module.exports = function(RED) {
 
             node.status({ fill: "yellow", shape: "dot", text: "Connecting..." });
 
+            // Helper function to add timeout to the connection
+            const connectWithTimeout = (client, endpointUrl, timeout) => {
+                return Promise.race([
+                    client.connect(endpointUrl),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error("Connection timed out")), timeout)
+                    )
+                ]);
+            };
+
             try {
-                // Connect to the OPC UA server
-                await client.connect(endpointUrl);
+                // Connect to the OPC UA server with timeout
+                await connectWithTimeout(client, endpointUrl, timeout);
                 node.status({ fill: "green", shape: "dot", text: "Connected" });
 
                 // Create a session
@@ -50,39 +61,4 @@ module.exports = function(RED) {
                     status: "connected",
                     endpoint: endpointUrl,
                     securityPolicy: securityPolicy,
-                    securityMode: securityMode,
-                    username: securityMode === "None" && securityPolicy === "None" ? "anonymous" : (username ? "provided" : "none"),
-                    readValue: dataValue.value.value,
-                    message: `Connection to ${endpointUrl} was successful.`
-                };
-
-                node.status({ fill: "green", shape: "dot", text: "Read successful" });
-
-                // Close session and disconnect
-                await session.close();
-                await client.disconnect();
-                node.status({ fill: "blue", shape: "dot", text: "Disconnected" });
-
-                node.send(msg);  // Send the success message
-
-            } catch (error) {
-                // Handle connection failure
-                msg.payload = {
-                    status: "failed",
-                    endpoint: endpointUrl,
-                    securityPolicy: securityPolicy,
-                    securityMode: securityMode,
-                    username: securityMode === "None" && securityPolicy === "None" ? "anonymous" : (username ? "provided" : "none"),
-                    error: error.message,
-                    message: `Failed to connect to ${endpointUrl}: ${error.message}`
-                };
-                node.error("OPC UA connection error: " + error.message, msg);
-                node.status({ fill: "red", shape: "ring", text: "Connection failed" });
-
-                node.send(msg);  // Send the failure message
-            }
-        });
-    }
-
-    RED.nodes.registerType("OpcUa-ConnectionTester", OpcUaConnectionTester);
-};
+                    securityMode: 
