@@ -19,8 +19,12 @@ module.exports = function(RED) {
             const resolvedSecurityMode = MessageSecurityMode[securityMode];
 
             if (!resolvedSecurityPolicy || !resolvedSecurityMode) {
-                node.error("Invalid security policy or mode. Please check configuration.");
+                msg.payload = {
+                    status: "error",
+                    error: "Invalid security policy or mode. Please check configuration."
+                };
                 node.status({ fill: "red", shape: "dot", text: "Invalid security settings" });
+                node.send(msg);
                 return;
             }
 
@@ -81,11 +85,11 @@ module.exports = function(RED) {
                 // Log error details and update Node-RED status
                 console.error("Error:", err.message);
                 console.error(err.stack);
-                node.status({ fill: "red", shape: "dot", text: "Error" });
                 msg.payload = {
                     status: "error",
                     error: err.message
                 };
+                node.status({ fill: "red", shape: "dot", text: "Error" });
                 node.send(msg);
             } finally {
                 // Ensure resources are released
