@@ -12,11 +12,21 @@ module.exports = function(RED) {
             const username = msg.payload.username || config.username || null;
             const password = msg.payload.password || config.password || null;
 
+            // Resolve security policy and mode, and check if they are valid
+            const resolvedSecurityPolicy = SecurityPolicy[securityPolicy];
+            const resolvedSecurityMode = MessageSecurityMode[securityMode];
+
+            if (!resolvedSecurityPolicy || !resolvedSecurityMode) {
+                node.error("Invalid security policy or mode. Please check configuration.");
+                node.status({ fill: "red", shape: "dot", text: "Invalid security settings" });
+                return;
+            }
+
             // Initialize OPC UA client with the specified parameters
             const client = OPCUAClient.create({
                 endpointMustExist: false,
-                securityPolicy: SecurityPolicy[securityPolicy],
-                securityMode: MessageSecurityMode[securityMode]
+                securityPolicy: resolvedSecurityPolicy,
+                securityMode: resolvedSecurityMode
             });
 
             node.status({ fill: "yellow", shape: "dot", text: "Connecting..." });
@@ -29,8 +39,8 @@ module.exports = function(RED) {
                 console.log("Connected to OPC UA server");
                 node.status({ fill: "green", shape: "dot", text: "Connected" });
 
-                // Create a session
-                if (securityMode === "None" && securityPolicy === "None") {
+                // Create a session based on security settings
+                if (securityPolicy === "None" && securityMode === "None") {
                     console.log("Creating anonymous session...");
                     session = await client.createSession();
                 } else if (username && password) {
@@ -61,6 +71,7 @@ module.exports = function(RED) {
             } catch (err) {
                 // Log error details and update Node-RED status
                 console.error("Error:", err.message);
+                console.error(err.stack);
                 node.status({ fill: "red", shape: "dot", text: "Error" });
                 msg.payload = {
                     status: "error",
@@ -81,5 +92,4 @@ module.exports = function(RED) {
     }
 
     RED.nodes.registerType("OpcUa-ConnectionTester", OpcUaConnectionTester);
-
 };
