@@ -80,5 +80,6 @@ module.exports = function(RED) {
         });
     }
 
-    RED.nodes.registerType("opcua-connection-tester", OpcUaConnectionTester);
+    RED.nodes.registerType("OpcUa-ConnectionTester", OpcUaConnectionTester);
+
 };
