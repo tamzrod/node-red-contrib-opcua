@@ -11,7 +11,6 @@ module.exports = function(RED) {
             const securityMode = msg.payload.securityMode || config.securityMode || "None";
             const username = msg.payload.username || config.username || null;
             const password = msg.payload.password || config.password || null;
-            const timeout = msg.payload.timeout || config.timeout || 5000; // Default timeout of 5000 ms (5 seconds)
 
             // Initialize OPC UA client with the specified parameters
             const client = OPCUAClient.create({
@@ -22,20 +21,10 @@ module.exports = function(RED) {
 
             node.status({ fill: "yellow", shape: "dot", text: "Connecting..." });
 
-            // Helper function to add timeout to the connection
-            const connectWithTimeout = (client, endpointUrl, timeout) => {
-                return Promise.race([
-                    client.connect(endpointUrl),
-                    new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error("Connection timed out")), timeout)
-                    )
-                ]);
-            };
-
             try {
-                // Log and attempt to connect to the OPC UA server with timeout
+                // Log and attempt to connect to the OPC UA server
                 console.log("Attempting to connect to OPC UA server:", endpointUrl);
-                await connectWithTimeout(client, endpointUrl, timeout);
+                await client.connect(endpointUrl);
                 console.log("Connected to OPC UA server");
 
                 node.status({ fill: "green", shape: "dot", text: "Connected" });
