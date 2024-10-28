@@ -8,6 +8,8 @@
             securityMode: { value: "None", required: true },
             username: { value: "" },
             password: { value: "" },
+            timeout: { value: 2000, required: true },
+            maxRetry: { value: 3, required: true },
             name: { value: "" }
         },
         inputs: 1,
@@ -50,6 +52,14 @@
         <input type="password" id="node-input-password" placeholder="Optional for anonymous access">
     </div>
     <div class="form-row">
+        <label for="node-input-timeout"><i class="fa fa-clock-o"></i> Timeout (ms)</label>
+        <input type="number" id="node-input-timeout" placeholder="2000" min="1000">
+    </div>
+    <div class="form-row">
+        <label for="node-input-maxRetry"><i class="fa fa-repeat"></i> Max Retry</label>
+        <input type="number" id="node-input-maxRetry" placeholder="3" min="1">
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Node name">
     </div>
@@ -63,6 +73,8 @@
         <li><strong>securityMode</strong> (String, optional): Message security mode. Options: "None", "Sign", "SignAndEncrypt". Default: "None"</li>
         <li><strong>username</strong> (String, optional): Username for authenticated connections (required if security is enabled)</li>
         <li><strong>password</strong> (String, optional): Password for authenticated connections (required if security is enabled)</li>
+        <li><strong>timeout</strong> (Number, optional): Connection timeout in milliseconds. Default: 2000 ms</li>
+        <li><strong>maxRetry</strong> (Number, optional): Maximum retry attempts. Default: 3</li>
     </ul>
     <p>If <strong>securityPolicy</strong> and <strong>securityMode</strong> are both set to "None", the connection defaults to anonymous mode, and <strong>username</strong> and <strong>password</strong> are ignored.</p>
     <p><strong>Example msg.payload:</strong></p>
@@ -72,7 +84,9 @@
     "securityPolicy": "None",
     "securityMode": "None",
     "username": "myUsername",
-    "password": "myPassword"
+    "password": "myPassword",
+    "timeout": 2000,
+    "maxRetry": 3
 }
     </pre>
 </script>
