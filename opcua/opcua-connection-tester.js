@@ -20,17 +20,16 @@ module.exports = function(RED) {
             });
 
             node.status({ fill: "yellow", shape: "dot", text: "Connecting..." });
+            let session;
 
             try {
                 // Log and attempt to connect to the OPC UA server
                 console.log("Attempting to connect to OPC UA server:", endpointUrl);
                 await client.connect(endpointUrl);
                 console.log("Connected to OPC UA server");
-
                 node.status({ fill: "green", shape: "dot", text: "Connected" });
 
                 // Create a session
-                let session;
                 if (securityMode === "None" && securityPolicy === "None") {
                     console.log("Creating anonymous session...");
                     session = await client.createSession();
@@ -45,6 +44,7 @@ module.exports = function(RED) {
                 console.log("Session created");
 
                 // Test reading a server attribute (e.g., Server Status)
+                node.status({ fill: "blue", shape: "ring", text: "Reading server status..." });
                 const nodeToRead = { nodeId: "ns=0;i=2258", attributeId: 13 };
                 const dataValue = await session.read(nodeToRead);
                 console.log("Read server status:", dataValue.value.value);
@@ -58,12 +58,6 @@ module.exports = function(RED) {
                     serverStatus: dataValue.value.value // Assuming the value attribute contains the server status
                 };
                 node.send(msg);
-
-                // Close the session and disconnect the client after testing
-                await session.close();
-                await client.disconnect();
-                node.status({ fill: "blue", shape: "dot", text: "Disconnected" });
-                console.log("Disconnected from OPC UA server");
             } catch (err) {
                 // Log error details and update Node-RED status
                 console.error("Error:", err.message);
@@ -73,6 +67,15 @@ module.exports = function(RED) {
                     error: err.message
                 };
                 node.send(msg);
+            } finally {
+                // Ensure resources are released
+                if (session) {
+                    await session.close();
+                    console.log("Session closed");
+                }
+                await client.disconnect();
+                node.status({ fill: "blue", shape: "dot", text: "Disconnected" });
+                console.log("Disconnected from OPC UA server");
             }
         });
     }
