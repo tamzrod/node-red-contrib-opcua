@@ -11,6 +11,8 @@ module.exports = function(RED) {
             const securityMode = msg.payload.securityMode || config.securityMode || "None";
             const username = msg.payload.username || config.username || null;
             const password = msg.payload.password || config.password || null;
+            const timeout = msg.payload.timeout || config.timeout || 2000; // Default timeout is 2000 ms
+            const maxRetry = msg.payload.maxRetry || config.maxRetry || 3; // Default max retry is 3
 
             // Resolve security policy and mode, and check if they are valid
             const resolvedSecurityPolicy = SecurityPolicy[securityPolicy];
@@ -22,11 +24,18 @@ module.exports = function(RED) {
                 return;
             }
 
-            // Initialize OPC UA client with the specified parameters
+            // Initialize OPC UA client with the specified parameters, including connection settings
             const client = OPCUAClient.create({
                 endpointMustExist: false,
                 securityPolicy: resolvedSecurityPolicy,
-                securityMode: resolvedSecurityMode
+                securityMode: resolvedSecurityMode,
+                connectionStrategy: {
+                    maxRetry: maxRetry,
+                    initialDelay: 2000,
+                    maxDelay: 5000,
+                    randomisationFactor: 0,
+                },
+                timeout: timeout // Use the timeout setting from config or default to 2000 ms
             });
 
             node.status({ fill: "yellow", shape: "dot", text: "Connecting..." });
@@ -91,5 +100,10 @@ module.exports = function(RED) {
         });
     }
 
-    RED.nodes.registerType("OpcUa-ConnectionTester", OpcUaConnectionTester);
+    RED.nodes.registerType("OpcUa-ConnectionTester", OpcUaConnectionTester, {
+        settings: {
+            timeout: { value: 2000, exportable: true }, // Default timeout of 2000 ms
+            maxRetry: { value: 3, exportable: true } // Default max retry of 3
+        }
+    });
 };
